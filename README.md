@@ -1,0 +1,95 @@
+# GitHub Changelog 新着監視スクリプト
+
+[GitHub Changelog](https://github.blog/changelog/) を定期的にチェックし、新しいお知らせがあれば内容をメールで通知する試作品です（クラウドワークス案件「指定サイトをスクレイピングして新着があればメール通知するスクリプト」への応募用プロトタイプ）。
+
+## セットアップ
+
+まず、pipが使えるか確認します。
+
+```bash
+python -m pip --version
+```
+
+`No module named pip` のようなエラーが出た場合のみ、以下でpipを有効化します。
+
+```bash
+python -m ensurepip --upgrade
+python -m pip install --upgrade pip
+```
+
+pipが使える状態になったら、依存ライブラリをインストールします。
+
+```bash
+python -m pip install -r requirements.txt
+```
+
+## 実行方法
+
+```bash
+python main.py
+```
+
+## 仕組み
+
+1. `https://github.blog/changelog/` のHTMLを取得する
+2. 各お知らせ（タイトル・URL・日付）を抜き出す
+3. `data/seen_urls.json` に保存済みのURL一覧と比較し、まだ見ていないURLを「新着」とする
+4. 新着があれば、メール送信（設定していなければコンソールにプレビュー表示）する
+5. 今回確認した全URLを `data/seen_urls.json` に保存する
+
+**初回実行時は `data/seen_urls.json` がまだ存在しないため、その時点の全記事が「新着」として扱われます。** 2回目以降の実行から、本当の意味での新着だけが検出されます。
+
+## 実際にメールを送りたい場合
+
+接続先はGmailの `smtp.gmail.com:465`（SSL）に決め打ちしています。Gmail以外を使う場合はコード内の`SMTP_HOST`/`SMTP_PORT`を変更してください。
+
+1. Googleアカウントで「アプリパスワード」を発行する（2段階認証を有効にした上で、Googleアカウントの[セキュリティ設定](https://myaccount.google.com/security) → アプリパスワード から発行）
+2. 以下の環境変数をすべて設定してから実行する
+
+```bash
+export SMTP_USER="you@gmail.com"
+export SMTP_PASS="xxxx xxxx xxxx xxxx"   # 発行したアプリパスワード
+export MAIL_TO="you@example.com"
+python main.py
+```
+
+3つの環境変数が全く設定されていなければプレビューモード（正常動作）、3つとも揃っていれば実送信します。1つや2つだけ設定されている場合は設定ミスとみなし、どの変数が未設定かを示すエラーで停止します（この場合 `data/seen_urls.json` は更新されません）。
+
+## 定期実行する場合
+
+### cron（Linuxなど）
+
+`crontab -e` で以下のように登録すると、1時間おきに実行されます（パスと仮想環境は環境に合わせて変更してください）。
+
+```
+0 * * * * cd /path/to/scraping-prototype && /path/to/scraping-prototype/.venv/bin/python main.py >> /path/to/scraping-prototype/cron.log 2>&1
+```
+
+### launchd（macOS）
+
+`~/Library/LaunchAgents/com.example.changelog-watcher.plist` を以下の内容で作成し、`launchctl load ~/Library/LaunchAgents/com.example.changelog-watcher.plist` で登録すると、1時間おきに実行されます。
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.example.changelog-watcher</string>
+    <key>ProgramArguments</key>
+    <array>
+        <string>/path/to/scraping-prototype/.venv/bin/python</string>
+        <string>/path/to/scraping-prototype/main.py</string>
+    </array>
+    <key>StartInterval</key>
+    <integer>3600</integer>
+</dict>
+</plist>
+```
+
+## 別サイトに転用する場合
+
+- `main.py` 冒頭の `SITE_URL` を対象サイトのURLに変更する
+- `parse_entries()` 内のCSSセレクタ（`ChangelogItem` / `ChangelogItem-title` / `Tag--type-alt` など）を対象サイトのHTML構造に合わせて変更する
+
+それ以外の部分（差分検知・メール通知・保存処理）はそのまま流用できます。
