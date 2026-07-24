@@ -1,6 +1,6 @@
 # GitHub Changelog 新着監視スクリプト
 
-[GitHub Changelog](https://github.blog/changelog/) を定期的にチェックし、新しいお知らせがあれば内容をメールで通知する試作品です（クラウドワークス案件「指定サイトをスクレイピングして新着があればメール通知するスクリプト」への応募用プロトタイプ）。
+[GitHub Changelog](https://github.blog/changelog/) を定期的にチェックし、新しいお知らせがあれば内容をメールで通知する試作品です。
 
 ## セットアップ
 
@@ -41,7 +41,7 @@ python main.py
 
 ## 実際にメールを送りたい場合
 
-接続先はGmailの `smtp.gmail.com:465`（SSL）に決め打ちしています。Gmail以外を使う場合はコード内の`SMTP_HOST`/`SMTP_PORT`を変更してください。
+接続先はGmailの `smtp.gmail.com:465`（SSL）に設定しています。Gmail以外を使う場合はコード内の`SMTP_HOST`/`SMTP_PORT`を変更してください。
 
 1. Googleアカウントで「アプリパスワード」を発行する（2段階認証を有効にした上で、Googleアカウントの[セキュリティ設定](https://myaccount.google.com/security) → アプリパスワード から発行）
 2. 以下の環境変数をすべて設定してから実行する
@@ -57,35 +57,7 @@ python main.py
 
 ## 定期実行する場合
 
-### cron（Linuxなど）
-
-`crontab -e` で以下のように登録すると、1時間おきに実行されます（パスと仮想環境は環境に合わせて変更してください）。
-
-```
-0 * * * * cd /path/to/scraping-prototype && /path/to/scraping-prototype/.venv/bin/python main.py >> /path/to/scraping-prototype/cron.log 2>&1
-```
-
-### launchd（macOS）
-
-`~/Library/LaunchAgents/com.example.changelog-watcher.plist` を以下の内容で作成し、`launchctl load ~/Library/LaunchAgents/com.example.changelog-watcher.plist` で登録すると、1時間おきに実行されます。
-
-```xml
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-<plist version="1.0">
-<dict>
-    <key>Label</key>
-    <string>com.example.changelog-watcher</string>
-    <key>ProgramArguments</key>
-    <array>
-        <string>/path/to/scraping-prototype/.venv/bin/python</string>
-        <string>/path/to/scraping-prototype/main.py</string>
-    </array>
-    <key>StartInterval</key>
-    <integer>3600</integer>
-</dict>
-</plist>
-```
+cronやlaunchdなど、OS標準のスケジューラーに登録することで定期実行も可能です。
 
 ## 別サイトに転用する場合
 
