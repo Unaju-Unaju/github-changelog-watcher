@@ -7,17 +7,17 @@
 まず、他のプロジェクトと依存関係が混ざらないよう、仮想環境を作成します。
 
 ```bash
-python -m venv venv
+python -m venv .venv
 ```
 
 作成した仮想環境を有効化します。
 
 ```bash
 # macOS/Linux
-source venv/bin/activate
+source .venv/bin/activate
 
 # Windows
-venv\Scripts\activate
+.venv\Scripts\activate
 ```
 
 以降のコマンドは、仮想環境を有効化した状態で実行してください。まず、pipが使えるか確認します。
