@@ -4,7 +4,23 @@
 
 ## セットアップ
 
-まず、pipが使えるか確認します。
+まず、他のプロジェクトと依存関係が混ざらないよう、仮想環境を作成します。
+
+```bash
+python -m venv venv
+```
+
+作成した仮想環境を有効化します。
+
+```bash
+# macOS/Linux
+source venv/bin/activate
+
+# Windows
+venv\Scripts\activate
+```
+
+以降のコマンドは、仮想環境を有効化した状態で実行してください。まず、pipが使えるか確認します。
 
 ```bash
 python -m pip --version
@@ -21,6 +37,12 @@ pipが使える状態になったら、依存ライブラリをインストー�
 
 ```bash
 python -m pip install -r requirements.txt
+```
+
+作業を終了する際は、以下のコマンドで仮想環境を抜けられます。
+
+```bash
+deactivate
 ```
 
 ## 実行方法
@@ -65,3 +87,10 @@ cronやlaunchdなど、OS標準のスケジューラーに登録することで�
 - `parse_entries()` 内のCSSセレクタ（`ChangelogItem` / `ChangelogItem-title` / `Tag--type-alt` など）を対象サイトのHTML構造に合わせて変更する
 
 それ以外の部分（差分検知・メール通知・保存処理）はそのまま流用できます。
+
+## 動作確認済み
+
+- 実サイト（`https://github.blog/changelog/`）からのHTML取得・新着検出
+- メール未設定時のコンソールプレビュー表示
+- 環境変数設定時の実際のメール送信（Gmail経由）
+- 2回目以降の実行で、既知記事が新着と判定されないこと
